@@ -1,0 +1,24 @@
+# PAES — Core requirements (always needed)
+numpy>=1.24
+pandas>=2.0
+matplotlib>=3.7
+tqdm>=4.65
+scipy>=1.11
+
+# ── Optional: Real models (comment out what you don't have) ──────────────────
+# Uncomment to use real models instead of simulators.
+# Each takes ~1-5 mins to install.
+
+# PyTorch + vision (for MobileNetV2, YOLOv5, MiDaS)
+# torch>=2.0
+# torchvision>=0.15
+
+# YOLOv5 via ultralytics
+# ultralytics>=8.0
+
+# Whisper (speech recognition)
+# openai-whisper>=20231117
+
+# HuggingFace transformers (for DistilBERT sentiment)
+# transformers>=4.35
+# sentencepiece>=0.1.99
