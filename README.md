@@ -123,18 +123,9 @@ After running, check:
 - `figures/fig4_burst.png`          — grouped bars by phase (Section 5.4)
 - `figures/fig5_sensitivity.png`    — weight sweep (Section 5.5)
 - `figures/fig6_per_model_heatmap.png` — per-model breakdown
-- `results/*.csv`                   — raw data for your paper tables
+- `results/*.csv`                   — raw data for paper tables
 
 
-
-## Scaling Up for Publication
-
-To get paper-quality statistics:
-
-1. Set `N_MAIN = 2000` in `run_all.py`
-2. Set `N_REPEATS = 5` in `run_all.py`
-3. Install real models (PyTorch + ultralytics + whisper)
-4. Run on your target hardware (Raspberry Pi / Jetson Nano if available)
 
 ## Reproducibility
 
