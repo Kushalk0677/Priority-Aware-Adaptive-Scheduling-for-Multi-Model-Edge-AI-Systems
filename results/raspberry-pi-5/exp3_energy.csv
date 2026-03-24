@@ -1,0 +1,8 @@
+scheduler,avg_energy_mj,total_energy_mj,n_tasks,relative_energy
+fifo,1.062,637.2,600,1.0
+round_robin,1.0645,638.7,600,1.002
+static_priority,1.072,643.21,600,1.009
+edf,1.0547,632.81,600,0.993
+pq_deadline,1.0646,638.74,600,1.002
+qos,1.0644,638.65,600,1.002
+paes,1.0568,634.06,600,0.995

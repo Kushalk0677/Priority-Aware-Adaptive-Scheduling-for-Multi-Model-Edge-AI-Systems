@@ -28,13 +28,16 @@ np.random.seed(42)
 
 parser = argparse.ArgumentParser(description="PAES Experiment Runner")
 parser.add_argument("--quick",  action="store_true",
-                    help="Run with reduced task counts for a quick test")
+                    help="Run with reduced task counts for a quick test (~2-3 min)")
 parser.add_argument("--exp",    nargs="+", type=int, default=[1,2,3,4,5],
                     help="Which experiments to run (default: all)")
 parser.add_argument("--models", nargs="+",
                     default=["mobilenet_v2","yolov5n","whisper_tiny",
                              "distilbert_sentiment","midas_small"],
                     help="Which models to include")
+parser.add_argument("--device", type=str, default=None,
+                    help="Device label for results subfolder, e.g. 'i7-1165G7'. "
+                         "If not set, saves to results/ root.")
 args = parser.parse_args()
 
 QUICK = args.quick
@@ -45,9 +48,10 @@ SCALE = 0.25 if QUICK else 1.0
 N_MAIN    = 600
 N_REPEATS = 5
 
-RESULTS_DIR = Path("results")
+_results_base = Path("results")
+RESULTS_DIR = _results_base / args.device if args.device else _results_base
 FIGURES_DIR = Path("figures")
-RESULTS_DIR.mkdir(exist_ok=True)
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 FIGURES_DIR.mkdir(exist_ok=True)
 
 print("\n" + "█"*60)
@@ -183,5 +187,5 @@ elapsed = time.time() - wall_start
 print(f"\n{'█'*60}")
 print(f"  All done in {elapsed/60:.1f} minutes")
 print(f"  Figures → figures/")
-print(f"  Raw CSVs → results/")
+print(f"  Raw CSVs → {RESULTS_DIR}/")
 print(f"{'█'*60}\n")
