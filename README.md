@@ -1,6 +1,6 @@
 # PAES — Priority-Aware Edge Scheduler
 
-[![arXiv](https://img.shields.io/badge/arXiv-2603.13343-b31b1b.svg)]()
+[![arXiv](https://img.shields.io/badge/arXiv-xxxx.xxxxx-b31b1b.svg)]()
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)]()
 
