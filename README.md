@@ -5,6 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)]()
 
 **Authors:** Kushal Khemani · Rushil Maniar · Ajinkyya Lokhande  
+Version : v1.0
 
 ---
 
