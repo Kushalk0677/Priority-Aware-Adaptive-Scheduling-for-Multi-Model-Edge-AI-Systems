@@ -95,7 +95,7 @@ print("─"*60)
 
 # ── Experiment 1 ──────────────────────────────────────────────────────────────
 if 1 in EXPS:
-    df1 = experiment_1_latency(models, n_tasks=N_MAIN)
+    df1, _ = experiment_1_latency(models, n_tasks=N_MAIN)
     df1.to_csv(RESULTS_DIR / "exp1_latency.csv")
     results_store["latency"] = df1
     print("  ✓ Exp 1 saved → results/exp1_latency.csv")
