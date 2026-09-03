@@ -13,8 +13,11 @@
 
 ## Video Abstract
 
-> 📹 **Video Presentation ([`media/gavideo.mp4`](media/gavideo.mp4))**: A 2.9-minute walkthrough of PAES, highlighting why queue wait time dominates multi-model edge AI serving (>98%), the composite min-heap scoring heuristic ($\alpha P_i + \beta/L_i + \gamma/E_i$), and experimental results across 6 hardware platforms (including real CUDA GPU inference on the NVIDIA Jetson Orin Nano).  
-> **Direct file:** [`media/gavideo.mp4`](media/gavideo.mp4) (1080p Full HD, 36.2 MB)
+[![PAES Video Abstract — IEEE Embedded Systems Letters](https://img.youtube.com/vi/BGSM55EgBn8/maxresdefault.jpg)](https://www.youtube.com/watch?v=BGSM55EgBn8)
+
+> 📹 **Watch on YouTube:** [https://youtu.be/BGSM55EgBn8](https://youtu.be/BGSM55EgBn8)  
+> A 2.9-minute walkthrough of PAES, highlighting why queue wait time dominates multi-model edge AI serving (>98%), the composite min-heap scoring heuristic ($\alpha P_i + \beta/L_i + \gamma/E_i$), and experimental results across 6 hardware platforms (including real CUDA GPU inference on the NVIDIA Jetson Orin Nano).  
+> *(Local copy archived in repository: [`media/gavideo.mp4`](media/gavideo.mp4))*
 
 ---
 
