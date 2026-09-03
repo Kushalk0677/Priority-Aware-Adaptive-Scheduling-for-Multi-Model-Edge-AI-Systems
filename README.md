@@ -1,17 +1,29 @@
 # PAES — Priority-Aware Edge Scheduler
 
+[![IEEE ESL](https://img.shields.io/badge/IEEE_ESL-Accepted-success.svg)]()
 [![arXiv](https://img.shields.io/badge/arXiv-xxxx.xxxxx-b31b1b.svg)]()
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)]()
 
-**Authors:** Kushal Khemani · Rushil Maniar · Ajinkyya Lokhande  
-Version : v2.0
+> **Accepted for publication in IEEE Embedded Systems Letters (IEEE ESL)**  
+> **Authors:** Kushal Khemani · Rushil Maniar · Ajinkyya Lokhande  
+> **Repository:** [https://github.com/Kushalk0677/paes](https://github.com/Kushalk0677/paes)  
+> Version : v2.0
+
+---
+
+## Video Abstract
+
+[![Watch the Video Abstract](figures/fig1_latency.png)](media/gavideo.mp4)
+
+> 📹 **Video Abstract (`media/gavideo.mp4`)**: A 2.9-minute walkthrough of PAES, highlighting why queue wait time dominates multi-model edge AI serving (>98%), the composite min-heap scoring heuristic ($\alpha P_i + \beta/L_i + \gamma/E_i$), and experimental results across 6 hardware platforms (including real CUDA GPU inference on the NVIDIA Jetson Orin Nano).  
+> **Direct file:** [`media/gavideo.mp4`](media/gavideo.mp4) (1080p Full HD, 36.2 MB)
 
 ---
 
 ## What PAES Does
 
-Modern edge deployments run multiple AI models concurrently on a single CPU. In this setting, **queue wait time — not inference — dominates total response time (>98%)**. Yet mainstream serving frameworks (TensorFlow Serving, TorchServe) default to FIFO.
+Modern edge deployments run multiple AI models concurrently on a single CPU or single-executor edge processor. In this setting, **queue wait time — not inference — dominates total response time (>98%)**. Yet mainstream serving frameworks (TensorFlow Serving, TorchServe) default to FIFO.
 
 PAES assigns each pending task a composite score:
 
@@ -21,14 +33,16 @@ Score(tᵢ) = α·Pᵢ + β·(1/Lᵢ) + γ·(1/Eᵢ)
 
 where `P` = priority, `L` = expected latency (ms), `E` = expected energy (mJ), and `α/β/γ` are tunable weights (default: 1/1/1). Tasks are inserted into an O(log n) min-heap; the highest-scoring task executes next. No offline profiling required.
 
-**Key results across 5 physical devices, 50 total runs:**
+**Key results across 6 physical platforms, 60 total runs:**
 
 | Metric | PAES | vs. FIFO | vs. QoS |
 |--------|------|----------|---------|
-| Queue wait — robot pipeline | 6,728 ± 183 ms | **−33.7%** | **−40.8%** |
-| Queue wait — synthetic (600T) | 45,400 ± 1,198 ms | **−32.6%** | comparable |
+| Queue wait — robot pipeline (i7) | 6,728 ± 183 ms | **−33.7%** | **−40.8%** |
+| Queue wait — robot pipeline (Jetson) | 6,587 ± 185 ms | **−33.7%** | **−41.5%** |
+| Queue wait — synthetic (600T, i7) | 45,400 ± 1,198 ms | **−32.6%** | comparable |
+| Queue wait — synthetic (600T, Jetson) | 13,165 ± 370 ms | **−28.7%** | comparable |
 | Deadline miss rate @ high load | **17.1%** | best of 7 | best of 7 |
-| Scheduling overhead | **0.79 ± 0.03 µs** | 0.001% of p50 inference | faster than QoS |
+| Scheduling overhead | **0.79 ± 0.03 µs** (x86) / **1.72 µs** (ARM) | 0.001% of p50 inference | faster than QoS |
 
 ---
 
@@ -44,9 +58,12 @@ paes/
 ├── run_real_device.py        ← Self-contained v2 runner (7 experiments, statistical tests)
 ├── figures.py                ← Publication figure generation
 ├── requirements.txt
+├── media/
+│   └── gavideo.mp4           ← 1080p IEEE Video Abstract presentation (2.91 mins)
 ├── models/
 │   └── model_zoo.py          ← Real model wrappers + calibrated fallbacks
 ├── results/
+│   ├── jetson-orin-nano/     ← NVIDIA Jetson Orin Nano (6C ARM, CUDA 12.6, real CUDA inference)
 │   ├── i7-1165G7/            ← Intel Core i7-1165G7 (4C, 16GB) — primary device
 │   ├── core-ultra-5/         ← Intel Core Ultra 5 125H (14C, 32GB)
 │   └── raspberry-pi-5/       ← Raspberry Pi 5 (Cortex-A76, 8GB)
@@ -62,15 +79,16 @@ paes/
 
 ## Hardware Tested
 
-| Device | CPU | Cores | RAM | Role in paper |
-|--------|-----|-------|-----|---------------|
+| Device | CPU / Architecture | Cores / Specs | RAM | Role in paper |
+|--------|-------------------|---------------|-----|---------------|
+| NVIDIA Jetson Orin Nano | 6-core ARM Cortex-A78AE | 6C @ 1.5 GHz, CUDA 12.6 | 8 GB | Genuine embedded edge GPU platform — real CUDA inference |
 | Intel Core i7-1165G7 | Tiger Lake | 4C/8T, 2.8–4.7 GHz | 16 GB | Primary / productive operating range |
 | Intel Core Ultra 5 125H | Meteor Lake | 14C, up to 4.5 GHz | 32 GB | Strongest PAES gains (−28.1% queue wait vs. FIFO) |
-| Raspberry Pi 5 | Cortex-A76 | 4C, 2.4 GHz | 8 GB | ARM / constrained platform |
+| Raspberry Pi 5 | Cortex-A76 | 4C, 2.4 GHz | 8 GB | Genuine embedded edge platform — ARM / constrained |
 | Intel Core Ultra 9 275H | Arrow Lake | 24C, up to 5.4 GHz | 32 GB | High-end boundary: all schedulers converge at 0% miss rate |
 | Intel Core i5-520M (2010) | Westmere | 2C/4T, 2.4 GHz | 4 GB | Legacy boundary: compute-saturated, >30% miss rate across all policies |
 
-**Hardware boundary condition:** PAES adds measurable value only where queue depth regularly exceeds ~5 tasks. The i7-1165G7 and Core Ultra 5 represent the productive operating range for laptop-class robotics and embedded edge assistants.
+**Hardware boundary condition:** PAES adds measurable value only where queue depth regularly exceeds ~5 tasks. The i7-1165G7, Core Ultra 5, and Jetson Orin Nano represent the productive operating range for embedded and robotic edge deployments.
 
 ---
 
@@ -289,6 +307,29 @@ PAES: lowest latency (−7.6% vs. FIFO), lowest queue wait (−28.1% vs. FIFO), 
 
 ---
 
+### NVIDIA Jetson Orin Nano — `results/jetson-orin-nano/`
+*Genuine embedded edge GPU platform. 6-core ARM Cortex-A78AE, 8 GB RAM, CUDA 12.6. All five models evaluated with real CUDA inference.*
+
+**Synthetic workload — 600 tasks:**
+
+| Scheduler | Avg Latency (ms) | Avg Queue Wait (ms) | Miss Rate | Throughput (tps) |
+|-----------|:---:|:---:|:---:|:---:|
+| FIFO | 72.4 | 18,463 | 1.3% | 13.82 |
+| Round Robin | 69.8 | 18,745 | 1.0% | 14.33 |
+| Static Priority | 86.0 | 28,589 | 1.0% | 11.62 |
+| EDF | 73.3 | 13,977 | 1.0% | 13.64 |
+| PQ+Deadline | 76.3 | 15,667 | 1.0% | 13.11 |
+| QoS | 58.5 | 11,915 | 1.0% | 17.10 |
+| **PAES** | 65.9 | **13,165** | 1.0% | 15.18 |
+
+PAES achieves a **28.7% queue wait reduction vs. FIFO** (13,165 ms vs. 18,463 ms).
+
+**Robot pipeline — 685 tasks:** PAES queue wait **6,587 ms** vs. FIFO 9,943 ms (**−33.7%**), QoS 11,261 ms (**−41.5%**). All schedulers: 0% miss rate.
+
+**Scheduling overhead:** PAES 1.72 ± 0.13 µs mean, 1.98 µs P99 (0.0022% of inference time on ARM).
+
+---
+
 ### Raspberry Pi 5 — `results/raspberry-pi-5/`
 *Cortex-A76, 4 cores @ 2.4 GHz, 8 GB RAM.*
 
@@ -307,13 +348,23 @@ See Section V of the paper for full discussion. Summary:
 - **Static profiles:** Task latency/energy estimates fixed at submission. Online EMA estimation planned.
 - **Low-load miss rate:** PAES performs worst at low load (25.3%). The v2 deadline-proximity bonus (Fix [3]) addresses this at threshold θ=150ms, with quantified improvement in Exp 2.
 - **Statistical tests:** v2 now includes pairwise Wilcoxon signed-rank tests for queue wait (Exp 1).
-- **GPU/NPU validation:** CPU-only. Jetson Orin validation is future work.
+- **GPU/NPU validation:** CPU and embedded GPU (NVIDIA Jetson Orin Nano CUDA) validated in this paper. Additional hardware acceleration targets (e.g., RK3588 NPU, Coral Edge TPU) remain future work.
 
 ---
 
 ## Citation
 
+If you use PAES in your research, please cite our paper:
 
+```bibtex
+@article{khemani2026paes,
+  title={PAES: Priority-Aware Adaptive Scheduling for Multi-Model Edge AI Systems},
+  author={Khemani, Kushal and Maniar, Rushil and Lokhande, Ajinkyya},
+  journal={IEEE Embedded Systems Letters},
+  year={2026},
+  publisher={IEEE}
+}
+```
 
 ---
 

@@ -124,7 +124,7 @@ class TaskResult:
 
 VALID_MODES = (
     "fifo", "round_robin", "static_priority",
-    "edf", "pq_deadline", "qos", "paes"
+    "edf", "pq_deadline", "qos", "paes", "estimated_sjf"
 )
 
 QOS_HIGH_TIER = 2.5
@@ -176,6 +176,9 @@ class Scheduler:
             urgency     = 1.0 / time_to_ddl
             tier = 0 if task.priority >= QOS_HIGH_TIER else (1 if task.priority >= QOS_MED_TIER else 2)
             return (tier, -urgency)
+
+        elif self.mode == "estimated_sjf":
+            return -task.paes_score(0.0, 1.0, 0.0)
 
         elif self.mode == "paes":
             return -task.paes_score(self.alpha, self.beta, self.gamma)
