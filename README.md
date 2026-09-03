@@ -7,16 +7,13 @@
 
 > **Accepted for publication in IEEE Embedded Systems Letters (IEEE ESL)**  
 > **Authors:** Kushal Khemani · Rushil Maniar · Ajinkyya Lokhande  
-> **Repository:** [https://github.com/Kushalk0677/paes](https://github.com/Kushalk0677/paes)  
-> Version : v2.0
+> **Repository:** [https://github.com/Kushalk0677/paes](https://github.com/Kushalk0677/paes)
 
 ---
 
 ## Video Abstract
 
-[![Watch the Video Abstract](figures/fig1_latency.png)](media/gavideo.mp4)
-
-> 📹 **Video Abstract (`media/gavideo.mp4`)**: A 2.9-minute walkthrough of PAES, highlighting why queue wait time dominates multi-model edge AI serving (>98%), the composite min-heap scoring heuristic ($\alpha P_i + \beta/L_i + \gamma/E_i$), and experimental results across 6 hardware platforms (including real CUDA GPU inference on the NVIDIA Jetson Orin Nano).  
+> 📹 **Video Presentation ([`media/gavideo.mp4`](media/gavideo.mp4))**: A 2.9-minute walkthrough of PAES, highlighting why queue wait time dominates multi-model edge AI serving (>98%), the composite min-heap scoring heuristic ($\alpha P_i + \beta/L_i + \gamma/E_i$), and experimental results across 6 hardware platforms (including real CUDA GPU inference on the NVIDIA Jetson Orin Nano).  
 > **Direct file:** [`media/gavideo.mp4`](media/gavideo.mp4) (1080p Full HD, 36.2 MB)
 
 ---
@@ -50,12 +47,12 @@ where `P` = priority, `L` = expected latency (ms), `E` = expected energy (mJ), a
 
 ```
 paes/
-├── scheduler.py              ← All 8 scheduler implementations + Task dataclass (v2 fixes)
+├── scheduler.py              ← All 8 scheduler implementations + Task dataclass
 ├── experiments.py            ← Experiments 1–6 (synthetic workload) + Wilcoxon tests
 ├── exp_workload_realism.py   ← Robot pipeline experiment (685 tasks, 30s)
 ├── exp_overhead.py           ← Scheduling decision overhead measurement
-├── run_all.py                ← Master runner (v1-compatible, uses experiments.py + figures.py)
-├── run_real_device.py        ← Self-contained v2 runner (7 experiments, statistical tests)
+├── run_all.py                ← Master runner (uses experiments.py + figures.py)
+├── run_real_device.py        ← Self-contained physical device runner (7 experiments, statistical tests)
 ├── figures.py                ← Publication figure generation
 ├── requirements.txt
 ├── media/
@@ -68,10 +65,8 @@ paes/
 │   ├── core-ultra-5/         ← Intel Core Ultra 5 125H (14C, 32GB)
 │   └── raspberry-pi-5/       ← Raspberry Pi 5 (Cortex-A76, 8GB)
 ├── figures/                  ← Pre-generated paper figures
-└── version_history/          ← Archived repository snapshots (v1.0 through v2.2)
+└── version_history/          ← Archived repository snapshots
 ```
-
-> **v2 update:** This repository now includes the v2 scheduler with 4 critical bugfixes, a new estimated-SJF baseline, per-model wait breakdown (Exp 6), and Wilcoxon signed-rank statistical tests. See [v2 Changes](#v2-changes) below.
 
 > Results for Core Ultra 9 275H and i5-520M are not in this public repository. These devices represent the hardware boundary conditions described in Section IV-F: the Core Ultra 9 runs too fast for scheduling order to matter; the i5-520M is compute-saturated regardless of policy.
 
@@ -151,17 +146,17 @@ python exp_overhead.py
 Output: `results/exp_overhead.csv`  
 PAES: **0.79 ± 0.03 µs mean**, **1.40 µs P99**, **0.001% of p50 inference time**.
 
-### v2 Runner (all 7 experiments, statistical tests)
+### Physical Device Runner (7 experiments, statistical tests)
 
 ```bash
-python run_real_device.py                 # Full v2 run — 7 experiments, 10 repeats, 600 tasks
+python run_real_device.py                 # Full run — 7 experiments, 10 repeats, 600 tasks
 python run_real_device.py --quick         # Reduced counts for fast validation
 python run_real_device.py --exp 1 6       # Specific experiments (1-6) + robot pipeline (7)
 python run_real_device.py --repeats 20    # More repeats for publication
 python run_real_device.py --device my_pc  # Custom device label for output folder
 ```
 
-Output: `results/<device_name>/` with CSVs, per-model wait breakdown, and `summary_v2.json`.
+Output: `results/<device_name>/` with CSVs, per-model wait breakdown, and `summary.json`.
 
 ### Full run (all experiments + figures)
 
@@ -171,33 +166,6 @@ python run_all.py --quick   # ~2–3 min, reduced task counts, for validation
 python run_all.py --exp 1 3 # run specific experiments only
 python run_all.py --device i7-1165G7  # Save results to device-specific subfolder
 ```
-
----
-
-## v2 Changes
-
-This repository has been updated from the original v1.0 (published paper) to include the v2 scheduler, experiments, and runner. The v2 changes address known limitations and add statistical rigor.
-
-### Four Bugfixes in v2
-
-| Fix | v1 (original) | v2 (corrected) |
-|-----|---------------|----------------|
-| [1] Deadline miss check | Used `inference_time > deadline` — a task waiting 9900ms then running 100ms was marked "met" | Uses `total_response_ms (queue_wait + inference) > deadline` — correct |
-| [2] Priority-weighted wait | Only reports unweighted `avg_wait_ms` | Adds `priority_weighted_avg_wait_ms` — YOLOv5 (pri=3.0) counts 3× more than MiDaS (pri=1.0) |
-| [3] Deadline proximity bonus | None — PAES had 25.3% low-load miss rate | Urgency spike when task within θ=150ms of deadline (bonus weight=2.0) |
-| [4] Per-model wait stats | `per_model_stats()` returns latency + miss rate only | Now includes `avg_wait_ms` and `p95_wait_ms` per model — reveals PM vs servant dynamic |
-
-### New Baseline
-
-**Estimated-SJF** (α=0, β=1, γ=0) — estimated Shortest Job First using PAES with only the latency term. Added as a proper 8th baseline to isolate the independent contribution of the β/L term.
-
-### New Experiment (Exp 6)
-
-**Per-Model Wait Breakdown**: Compares PAES vs FIFO per-model wait times, revealing that PAES reduces high-priority YOLOv5 wait by ~80% while increasing low-priority MiDaS wait by ~80% — correct behaviour invisible in the unweighted average.
-
-### Statistical Tests
-
-Wilcoxon signed-rank tests are now performed comparing each scheduler against PAES on queue wait and miss rate, replacing the earlier non-overlapping std.dev. heuristic.
 
 ---
 
@@ -235,7 +203,7 @@ The framework supports two execution modes, selected automatically per model:
 | EDF | Earliest Deadline First (Liu & Layland 1973) — optimal under preemption; included to quantify the preemption-assumption violation gap |
 | PQ+Deadline | Priority queue with deadline urgency bonus |
 | QoS | Three-tier priority with intra-tier deadline ordering |
-| Estimated-SJF | PAES with α=0, β=1, γ=0 — estimated Shortest Job First using latency-only ordering *(added in v2)* |
+| Estimated-SJF | PAES with α=0, β=1, γ=0 — estimated Shortest Job First using latency-only ordering |
 | **PAES** | **This work** |
 
 All schedulers are non-preemptive — AI forward passes are atomic and cannot be interrupted.
@@ -346,8 +314,8 @@ See Section V of the paper for full discussion. Summary:
 - **Energy:** TDP-proxy estimates only. RAPL-based measurement planned.
 - **Single-threaded:** One execution queue. Multi-core per-queue PAES with work-stealing is a planned extension.
 - **Static profiles:** Task latency/energy estimates fixed at submission. Online EMA estimation planned.
-- **Low-load miss rate:** PAES performs worst at low load (25.3%). The v2 deadline-proximity bonus (Fix [3]) addresses this at threshold θ=150ms, with quantified improvement in Exp 2.
-- **Statistical tests:** v2 now includes pairwise Wilcoxon signed-rank tests for queue wait (Exp 1).
+- **Low-load miss rate:** PAES performs worst at low load (25.3%). A deadline-proximity bonus addresses this at threshold θ=150ms, with quantified improvement in Exp 2.
+- **Statistical tests:** Evaluated using pairwise Wilcoxon signed-rank tests for queue wait (Exp 1).
 - **GPU/NPU validation:** CPU and embedded GPU (NVIDIA Jetson Orin Nano CUDA) validated in this paper. Additional hardware acceleration targets (e.g., RK3588 NPU, Coral Edge TPU) remain future work.
 
 ---
